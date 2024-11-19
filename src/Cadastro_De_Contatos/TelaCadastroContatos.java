@@ -2,11 +2,11 @@ package Cadastro_De_Contatos;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TelaCadastroContatos {
     private JPanel panelInferior;
@@ -19,34 +19,40 @@ public class TelaCadastroContatos {
     private JTextField txtfEmail;
     private JButton btnAdicionar;
     private JButton btnRemover;
-    private JTable tbContatos;
-    private JScrollPane jScroll;
-    private int contador = 0;
+    private JList<String> listContatos;
+    private String nomeContato;
+    private String telefoneContato;
+    private String emailContato;
+    private DefaultListModel<String> listModel;
+    private ControleDeContatos controle;
 
     public TelaCadastroContatos() {
 
-        ControleDeContatos controle = new ControleDeContatos();
+        controle = new ControleDeContatos();
+        listModel = new DefaultListModel<>();
+        listContatos.setModel(listModel);
 
         btnAdicionar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                controle.contatos(txtfNome.getText(), txtfTelefone.getText(), txtfEmail.getText());
+                nomeContato = txtfNome.getText();
+                telefoneContato = txtfTelefone.getText();
+                emailContato = txtfEmail.getText();
 
-                DefaultTableModel model = (DefaultTableModel) tbContatos.getModel();
+                if (nomeContato.equals("") && telefoneContato.equals("") && emailContato.equals("")) {
+                    txtfNome.setText("");
+                    txtfTelefone.setText("");
+                    txtfEmail.setText("");
+                }else {
 
-                if (model.getColumnCount() == 0) {
-                    model.setColumnIdentifiers(new String[]{"Nome", "Telefone", "Email"});
+                    controle.contatos(txtfNome.getText(), txtfTelefone.getText(), txtfEmail.getText());
+                    atualizaTabela();
+
+                    txtfEmail.setText("");
+                    txtfTelefone.setText("");
+                    txtfNome.setText("");
                 }
-
-                model.addRow(new Object[]{controle.getNome(contador), controle.getTelefone(contador), controle.getEmail(contador)});
-
-
-                contador++;
-
-                txtfEmail.setText("");
-                txtfTelefone.setText("");
-                txtfNome.setText("");
 
 
             }
@@ -55,25 +61,34 @@ public class TelaCadastroContatos {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                DefaultTableModel model = (DefaultTableModel) tbContatos.getModel();
+                int selecindice = listContatos.getSelectedIndex();
 
-                int selectedRow = tbContatos.getSelectedRow();
+                if (selecindice != -1) {
 
-                if (selectedRow != -1) {
+                    controle.removeComprimisso(selecindice);
+                    atualizaTabela();
 
-                    String nome = (String) tbContatos.getModel().getValueAt(selectedRow, 0);
-                    String telefone = (String) tbContatos.getModel().getValueAt(selectedRow, 1);
-                    String email = (String) tbContatos.getModel().getValueAt(selectedRow, 2);
-
-                    model.removeRow(selectedRow);
-
+                }else {
+                    JOptionPane.showMessageDialog(null, "Selecione um contato para remover.");
                 }
+
 
             }
         });
     }
 
+    public void atualizaTabela(){
+
+        listModel.clear();
+        String[] contatos = controle.getTodosContatos();
+        for(String contato : contatos){
+            listModel.addElement(contato);
+        }
+
+    }
+
     public static void main(String[] args) {
+
 
         JFrame frame = new JFrame("Cadastro de Contatos");
         frame.setContentPane(new TelaCadastroContatos().panelTelaContatos);
@@ -82,4 +97,5 @@ public class TelaCadastroContatos {
         frame.setVisible(true);
 
     }
+
 }
